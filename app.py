@@ -410,7 +410,15 @@ def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optiona
 
 
 
-def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path=[]):
+def render_grid(state, title=None):
+    grid = state["grid"]
+    start = state["start"]
+    end = state["end"]
+    open_set = state.get("open_set", [])
+    closed_set = state.get("closed_set", [])
+    current = state.get("current")
+    path = state.get("path", [])
+
     n, m = grid.shape
     image = np.zeros((n, m, 3))  # RGB image
 
@@ -420,13 +428,13 @@ def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path
         "wall": (0, 0, 0),        # black
         "start": (1, 0.5, 0),     # orange
         "end": (0, 0.8, 0),       # green
-        "path": (1, 1, 0),        # yellow (final path)
-        "closed": (0.6, 0.6, 0.6),# grey (explored nodes)
-        "open": (0.3, 0.6, 1),    # blue (frontier nodes)
-        "current": (1, 0, 0)      # red (actively expanded)
+        "path": (1, 1, 0),        # yellow
+        "closed": (0.6, 0.6, 0.6),
+        "open": (0.3, 0.6, 1),
+        "current": (1, 0, 0)
     }
 
-    # Fill grid
+    # Fill walls and empty cells
     for i in range(n):
         for j in range(m):
             if grid[i, j] == 1:
@@ -434,28 +442,17 @@ def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path
             else:
                 image[i, j] = colors["empty"]
 
-    # Closed set (explored)
-    for (x, y) in closed_set:
-        image[x, y] = colors["closed"]
-
-    # Open set (frontier)
-    for (x, y) in open_set:
-        image[x, y] = colors["open"]
-
-    # Current node
-    if current:
-        image[current] = colors["current"]
-
-    # Final path
-    for (x, y) in path:
-        image[x, y] = colors["path"]
+    # Closed, Open, Current, Path
+    for (x, y) in closed_set: image[x, y] = colors["closed"]
+    for (x, y) in open_set: image[x, y] = colors["open"]
+    if current: image[current] = colors["current"]
+    for (x, y) in path: image[x, y] = colors["path"]
 
     # Start & End
     image[start] = colors["start"]
     image[end] = colors["end"]
 
-    # Show in Streamlit (instead of plt)
-    st.image(image, use_column_width=True)
+    st.image(image, caption=title, use_container_width=True)
 
 
 
