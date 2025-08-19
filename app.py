@@ -8,7 +8,8 @@ from collections import deque
 import heapq
 from dataclasses import dataclass
 from typing import Generator, List, Tuple, Dict, Optional, Set
-
+import matplotlib.pyplot as plt
+import numpy as np
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
@@ -411,65 +412,54 @@ def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optiona
 
 
 
-def render_grid(state: Dict, title: str = ""):
-    grid = state["grid"]
-    n = grid.shape[0]
-    canvas = np.zeros_like(grid, dtype=float)
+def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path=[]):
+    n, m = grid.shape
+    image = np.zeros((n, m, 3))  # RGB image
 
-    # 1 = walls (black)
-    canvas[grid == 1] = 1
+    # Colors
+    colors = {
+        "empty": (1, 1, 1),       # white
+        "wall": (0, 0, 0),        # black
+        "start": (1, 0.5, 0),     # orange
+        "end": (0, 0.8, 0),       # green
+        "path": (1, 1, 0),        # yellow (final path)
+        "closed": (0.6, 0.6, 0.6),# grey (explored nodes)
+        "open": (0.3, 0.6, 1),    # blue (currently being searched)
+        "current": (1, 0, 0)      # red (the node actively expanded)
+    }
 
-    # 2 = explored (grey)
-    for r, c in state.get("visited", []):
-        if canvas[r, c] != 1:  # don't overwrite walls
-            canvas[r, c] = 2
+    # Fill walls and empty cells
+    for i in range(n):
+        for j in range(m):
+            if grid[i, j] == 1:
+                image[i, j] = colors["wall"]
+            else:
+                image[i, j] = colors["empty"]
 
-    # 3 = frontier (yellow) — optional; safe if not provided
-    for r, c in state.get("frontier", []):
-        if canvas[r, c] not in (1, 5):  # don't overwrite walls or final path
-            canvas[r, c] = 3
+    # Closed set (explored)
+    for (x, y) in closed_set:
+        image[x, y] = colors["closed"]
 
-    # 4 = current (blue)
-    if state.get("current") is not None:
-        cr, cc = state["current"]
-        canvas[cr, cc] = 4
+    # Open set (frontier)
+    for (x, y) in open_set:
+        image[x, y] = colors["open"]
 
-    # 5 = final path (green) on top
-    for r, c in state.get("path", []):
-        canvas[r, c] = 5
+    # Current node
+    if current:
+        image[current] = colors["current"]
 
-    # 6 = start (orange), 7 = goal (purple)
-    canvas[0, 0] = 6
-    canvas[n-1, n-1] = 7
+    # Final path
+    for (x, y) in path:
+        image[x, y] = colors["path"]
 
-    # Discrete colorscale with exact bins at k/7 and locked range
-    step = 1.0 / 7.0
-    eps = 1e-6
-    colorscale = [
-        [0.0,           "#FFFFFF"], [1*step - eps, "#FFFFFF"],  # 0 free = white
-        [1*step,        "#000000"], [2*step - eps, "#000000"],  # 1 wall = black
-        [2*step,        "#A0AEC0"], [3*step - eps, "#A0AEC0"],  # 2 explored = grey
-        [3*step,        "#F6E05E"], [4*step - eps, "#F6E05E"],  # 3 frontier = yellow
-        [4*step,        "#3182CE"], [5*step - eps, "#3182CE"],  # 4 current = blue
-        [5*step,        "#48BB78"], [6*step - eps, "#48BB78"],  # 5 final path = green
-        [6*step,        "#ED8936"], [7*step - eps, "#ED8936"],  # 6 start = orange
-        [7*step,        "#9F7AEA"], [1.0,           "#9F7AEA"], # 7 goal = purple
-    ]
+    # Start & End
+    image[start] = colors["start"]
+    image[end] = colors["end"]
 
-    fig = go.Figure(data=go.Heatmap(
-        z=canvas,
-        zmin=0, zmax=7,              # <- lock normalization
-        colorscale=colorscale,
-        showscale=False,
-    ))
-    fig.update_layout(
-        title=title,
-        xaxis=dict(visible=False),
-        yaxis=dict(visible=False, scaleanchor="x", scaleratio=1),
-        margin=dict(l=10, r=10, t=40, b=10),
-        height=500,
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    plt.imshow(image, interpolation="nearest")
+    plt.xticks([])
+    plt.yticks([])
+    plt.pause(0.1)  # for animation
 
 
 
