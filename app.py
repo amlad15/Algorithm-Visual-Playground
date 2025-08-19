@@ -374,21 +374,41 @@ def generate_grid(n: int, wall_density: float) -> Tuple[np.ndarray, Tuple[int,in
 # Visualization Helpers (Plotly)
 # =========================
 
-def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optional[int]]] = None, title: str = ""): 
+def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optional[int]]] = None, title: str = ""):
     colors = ["#A0AEC0"] * len(arr)  # gray
     if highlight and highlight[0] is not None and 0 <= highlight[0] < len(arr):
         colors[highlight[0]] = "#3182CE"  # blue
     if highlight and highlight[1] is not None and 0 <= highlight[1] < len(arr):
         colors[highlight[1]] = "#E53E3E"  # red
-    fig = go.Figure(data=[go.Bar(x=list(range(len(arr))), y=arr, marker_color=colors)])
+
+    max_val = max(arr) if arr else 0
+
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=list(range(len(arr))),
+                y=arr,
+                marker_color=colors,
+                # 👇 add numeric labels on each bar
+                text=[str(v) for v in arr],
+                textposition="outside",          # place text above bars
+                texttemplate="%{text}",          # ensure raw text is shown
+            )
+        ]
+    )
+
     fig.update_layout(
         title=title,
         xaxis_title="Index",
         yaxis_title="Value",
         margin=dict(l=10, r=10, t=40, b=10),
         height=300,
+        # give extra headroom so labels aren't clipped
+        yaxis=dict(range=[0, max_val * 1.2 if max_val > 0 else 1])
     )
+
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 def render_grid(state: Dict, title: str = ""):
