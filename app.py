@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from typing import Generator, List, Tuple, Dict, Optional, Set
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -424,11 +423,11 @@ def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path
         "end": (0, 0.8, 0),       # green
         "path": (1, 1, 0),        # yellow (final path)
         "closed": (0.6, 0.6, 0.6),# grey (explored nodes)
-        "open": (0.3, 0.6, 1),    # blue (currently being searched)
-        "current": (1, 0, 0)      # red (the node actively expanded)
+        "open": (0.3, 0.6, 1),    # blue (frontier nodes)
+        "current": (1, 0, 0)      # red (actively expanded)
     }
 
-    # Fill walls and empty cells
+    # Fill grid
     for i in range(n):
         for j in range(m):
             if grid[i, j] == 1:
@@ -456,10 +455,8 @@ def render_grid(grid, start, end, open_set=[], closed_set=[], current=None, path
     image[start] = colors["start"]
     image[end] = colors["end"]
 
-    plt.imshow(image, interpolation="nearest")
-    plt.xticks([])
-    plt.yticks([])
-    plt.pause(0.1)  # for animation
+    # Show in Streamlit (instead of plt)
+    st.image(image, use_column_width=True)
 
 
 
