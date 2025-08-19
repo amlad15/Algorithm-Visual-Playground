@@ -410,49 +410,66 @@ def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optiona
 
 
 
-def render_grid(state, title=None):
+def render_grid(state: Dict, title: str = ""):
     grid = state["grid"]
-    start = state["start"]
-    end = state["end"]
-    open_set = state.get("open_set", [])
-    closed_set = state.get("closed_set", [])
-    current = state.get("current")
-    path = state.get("path", [])
+    n = grid.shape[0]
+    canvas = np.zeros_like(grid, dtype=float)
 
-    n, m = grid.shape
-    image = np.zeros((n, m, 3))  # RGB image
+    # 1 = walls (black)
+    canvas[grid == 1] = 1
 
-    # Colors
-    colors = {
-        "empty": (1, 1, 1),       # white
-        "wall": (0, 0, 0),        # black
-        "start": (1, 0.5, 0),     # orange
-        "end": (0, 0.8, 0),       # green
-        "path": (1, 1, 0),        # yellow
-        "closed": (0.6, 0.6, 0.6),
-        "open": (0.3, 0.6, 1),
-        "current": (1, 0, 0)
-    }
+    # 2 = explored (grey)
+    for r, c in state.get("visited", []):
+        if canvas[r, c] != 1:  # don't overwrite walls
+            canvas[r, c] = 2
 
-    # Fill walls and empty cells
-    for i in range(n):
-        for j in range(m):
-            if grid[i, j] == 1:
-                image[i, j] = colors["wall"]
-            else:
-                image[i, j] = colors["empty"]
+    # 3 = frontier (yellow) — optional; safe if not provided
+    for r, c in state.get("frontier", []):
+        if canvas[r, c] not in (1, 5):  # don't overwrite walls or final path
+            canvas[r, c] = 3
 
-    # Closed, Open, Current, Path
-    for (x, y) in closed_set: image[x, y] = colors["closed"]
-    for (x, y) in open_set: image[x, y] = colors["open"]
-    if current: image[current] = colors["current"]
-    for (x, y) in path: image[x, y] = colors["path"]
+    # 4 = current (blue)
+    if state.get("current") is not None:
+        cr, cc = state["current"]
+        canvas[cr, cc] = 4
 
-    # Start & End
-    image[start] = colors["start"]
-    image[end] = colors["end"]
+    # 5 = final path (green) on top
+    for r, c in state.get("path", []):
+        canvas[r, c] = 5
 
-    st.image(image, caption=title, use_container_width=True)
+    # 6 = start (orange), 7 = goal (purple)
+    canvas[0, 0] = 6
+    canvas[n-1, n-1] = 7
+
+    # Discrete colorscale with exact bins at k/7 and locked range
+    step = 1.0 / 7.0
+    eps = 1e-6
+    colorscale = [
+        [0.0,           "#FFFFFF"], [1*step - eps, "#FFFFFF"],  # 0 free = white
+        [1*step,        "#000000"], [2*step - eps, "#000000"],  # 1 wall = black
+        [2*step,        "#A0AEC0"], [3*step - eps, "#A0AEC0"],  # 2 explored = grey
+        [3*step,        "#F6E05E"], [4*step - eps, "#F6E05E"],  # 3 frontier = yellow
+        [4*step,        "#3182CE"], [5*step - eps, "#3182CE"],  # 4 current = blue
+        [5*step,        "#48BB78"], [6*step - eps, "#48BB78"],  # 5 final path = green
+        [6*step,        "#ED8936"], [1.0 - eps,   "#ED8936"],   # 6 start = orange
+        [1.0,           "#9F7AEA"],                               # 7 goal = purple
+    ]
+
+    fig = go.Figure(data=go.Heatmap(
+        z=canvas,
+        zmin=0, zmax=7,              # <- lock normalization
+        colorscale=colorscale,
+        showscale=False,
+    ))
+    fig.update_layout(
+        title=title,
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False, scaleanchor="x", scaleratio=1),
+        margin=dict(l=10, r=10, t=40, b=10),
+        height=500,
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
 
 
 
