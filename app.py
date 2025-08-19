@@ -755,15 +755,23 @@ def main():
         st.markdown(
             """
             ### About
-            This app implements sorting and pathfinding **from scratch** using Python generators. 
-            Each algorithm yields intermediate states to drive the animation in Streamlit.
+            About the App (Author: Aaron Lad)
 
-            **Sorting**: Bubble, Insertion, Selection, Merge, Quick, Heap.  
-            **Pathfinding**: BFS, DFS, Dijkstra’s, A* (Manhattan).
-
-            **Controls**: Generate data, Start, Pause, Step, Reset, and control animation speed.
-
-            Built with **Streamlit** + **Plotly**.
+            This project is an Algorithm Playground where algorithms do not just stay in textbooks but actually come alive on your screen. I built it to make learning and exploring algorithms more fun and interactive.
+            
+            The app has three main sections:
+            
+            ✨ Sorting Visualizer – You can pick from classics like Bubble Sort, Merge Sort, Quick Sort, and others. The bars move around in real time until everything is sorted, making it easy to see how each algorithm works step by step.
+            
+            🧩 Pathfinding Playground – Place walls on a grid and watch algorithms like BFS, DFS, A Star, and Dijkstra try to figure out the shortest path from start to finish. It feels almost like a puzzle game and you can instantly see the differences in how each algorithm explores the grid.
+            
+            🔗 Graph Explorer – Here you can test graph search algorithms and watch nodes light up as the algorithm makes decisions. It is a simple way to understand traversal and connectivity in networks.
+            
+            The app is designed to be interactive, visual, and beginner friendly. Whether you are a student learning algorithms, a teacher looking for a teaching aid, or just someone who loves puzzles, this playground gives you a hands on way to explore how these core ideas in computer science actually work.
+            
+            It is built with Python, Streamlit, NumPy, and Plotly. Streamlit makes it feel like a real app while still being pure Python code which keeps everything flexible and easy to extend.
+            
+            In short, this is where algorithms meet visualization and learning feels more like play.
             """
         )
 
