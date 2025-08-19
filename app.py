@@ -1,5 +1,5 @@
 # Algorithm Visual Playground — Streamlit app
-# Author: ChatGPT
+# Author: Aaron Lad
 # Run: streamlit run app.py
 
 import time
