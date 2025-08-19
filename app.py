@@ -1,6 +1,15 @@
-# Algorithm Visual Playground — Streamlit app
 # Author: Aaron Lad
-# Run: streamlit run app.py
+"""
+Algorithm Visual Playground — Streamlit app
+
+Visualizes classic algorithms using Python generators that yield incremental
+states. Streamlit drives the UI and steps through each generator to animate
+sorting and pathfinding.
+
+Sections:
+- Sorting (Bubble, Insertion, Selection, Merge, Quick, Heap)
+- Pathfinding (BFS, DFS, Dijkstra's, A* with Manhattan heuristic)
+"""
 
 import time
 import random
@@ -17,6 +26,10 @@ import streamlit as st
 # =========================
 
 def init_session_state():
+    """
+    Initialize all Streamlit session_state keys with sensible defaults.
+    Keeps UI and generators in sync across reruns.
+    """    
     ss = st.session_state
     ss.setdefault("tab", "Sorting")
 
@@ -52,6 +65,14 @@ def init_session_state():
 # =========================
 
 def bubble_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """
+    Bubble Sort (generator).
+
+    Yields dicts like:
+      {"arr": current_array_snapshot, "highlight": (i, j), "action": "compare|swap|done"}
+
+    Streamlit consumes these to animate steps.
+    """
     a = arr[:]
     n = len(a)
     for i in range(n):
@@ -64,6 +85,7 @@ def bubble_sort(arr: List[int]) -> Generator[Dict, None, None]:
 
 
 def insertion_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """Insertion Sort: yields 'compare', 'shift', and 'insert' actions."""
     a = arr[:]
     for i in range(1, len(a)):
         key = a[i]
@@ -79,6 +101,7 @@ def insertion_sort(arr: List[int]) -> Generator[Dict, None, None]:
 
 
 def selection_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """Selection Sort: tracks current min index; yields 'compare', 'new_min', 'swap'."""
     a = arr[:]
     n = len(a)
     for i in range(n):
@@ -94,6 +117,12 @@ def selection_sort(arr: List[int]) -> Generator[Dict, None, None]:
 
 
 def merge_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """
+    Iterative Merge Sort.
+
+    Records states during merges into a list, then yields them in order.
+    This avoids recursion while still animating comparisons and writes.
+    """
     a = arr[:]
     states = []
 
@@ -139,6 +168,11 @@ def merge_sort(arr: List[int]) -> Generator[Dict, None, None]:
 
 
 def quick_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """
+    Quick Sort using Lomuto partition.
+
+    Yields during pivot comparisons and swaps, then recurses via nested generator.
+    """
     a = arr[:]
 
     def _partition(low, high):
@@ -174,6 +208,11 @@ def quick_sort(arr: List[int]) -> Generator[Dict, None, None]:
 
 
 def heap_sort(arr: List[int]) -> Generator[Dict, None, None]:
+    """
+    Heap Sort.
+
+    Yields during heapify comparisons and swaps, then during root extraction.
+    """
     a = arr[:]
 
     def heapify(n, i):
@@ -222,6 +261,7 @@ SORT_ALGOS = {
 # =========================
 
 def neighbors(r, c, n):
+    """Yield valid 4-directional neighbors within an n x n grid."""
     for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
         nr, nc = r + dr, c + dc
         if 0 <= nr < n and 0 <= nc < n:
@@ -229,6 +269,12 @@ def neighbors(r, c, n):
 
 
 def bfs(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Generator[Dict, None, None]:
+    """
+    Breadth-First Search (unweighted).
+
+    Yields state dicts:
+      {"grid": grid, "visited": set, "path": partial_or_final_path, "current": node}
+    """
     n = grid.shape[0]
     q = deque([start])
     visited: Set[Tuple[int,int]] = {start}
@@ -250,6 +296,7 @@ def bfs(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Genera
 
 
 def dfs(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Generator[Dict, None, None]:
+    """Depth-First Search; yields same state structure as BFS."""
     n = grid.shape[0]
     stack = [start]
     visited: Set[Tuple[int,int]] = set()
@@ -272,6 +319,7 @@ def dfs(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Genera
 
 
 def dijkstra(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Generator[Dict, None, None]:
+    """Dijkstra’s for unit weights; uses a min-heap; yields visited/current/path each step."""
     n = grid.shape[0]
     dist = {start: 0}
     parent = {start: None}
@@ -302,6 +350,8 @@ def manhattan(a: Tuple[int,int], b: Tuple[int,int]) -> int:
 
 
 def a_star(grid: np.ndarray, start: Tuple[int,int], goal: Tuple[int,int]) -> Generator[Dict, None, None]:
+    """A* with Manhattan heuristic; tracks g and f scores; yields states like other search algos."""
+    
     n = grid.shape[0]
     g = {start: 0}
     f = {start: manhattan(start, goal)}
@@ -338,6 +388,10 @@ PATH_ALGOS = {
 
 
 def reconstruct_path(parent: Dict[Tuple[int,int], Optional[Tuple[int,int]]], end: Optional[Tuple[int,int]]):
+    """
+    Rebuild path from 'end' back to start using the 'parent' map.
+    Returns [] if end is None or unreachable.
+    """
     if end is None or end not in parent:
         return []
     path = []
@@ -354,13 +408,17 @@ def reconstruct_path(parent: Dict[Tuple[int,int], Optional[Tuple[int,int]]], end
 # =========================
 
 def generate_array(n: int) -> List[int]:
-    # Unique values for clearer bar visualization
+    """Create a shuffled list of unique values 1..n for clear bar heights."""
     arr = random.sample(range(1, n + 1), n)
     random.shuffle(arr)
     return arr
 
 
 def generate_grid(n: int, wall_density: float) -> Tuple[np.ndarray, Tuple[int,int], Tuple[int,int]]:
+    """
+    Generate an n x n binary grid with random walls.
+    Ensures start=(0,0) and goal=(n-1,n-1) are free.
+    """
     grid = (np.random.rand(n, n) < wall_density).astype(int)
     start = (0, 0)
     goal = (n-1, n-1)
@@ -374,6 +432,10 @@ def generate_grid(n: int, wall_density: float) -> Tuple[np.ndarray, Tuple[int,in
 # =========================
 
 def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optional[int]]] = None, title: str = ""):
+    """
+    Render the current array as a bar chart with optional highlighted indices.
+    Also shows the numeric value on each bar (text labels) for easy tracking.
+    """
     colors = ["#A0AEC0"] * len(arr)  # gray
     if highlight and highlight[0] is not None and 0 <= highlight[0] < len(arr):
         colors[highlight[0]] = "#3182CE"  # blue
@@ -411,6 +473,20 @@ def render_bars(arr: List[int], highlight: Optional[Tuple[Optional[int], Optiona
 
 
 def render_grid(state: Dict, title: str = ""):
+    """
+    Render grid state as a discrete Heatmap.(still a little bugged)
+
+    Encoding:
+      0 free=white, 1 wall=black, 2 explored=grey, 3 frontier=yellow,
+      4 current=blue, 5 final path=green, 6 start=orange, 7 goal=purple.
+
+    'state' keys:
+      - grid: np.ndarray of 0/1
+      - visited: set[(r,c)] explored cells (optional)
+      - frontier: iterable[(r,c)] next-to-visit (optional)
+      - current: (r,c) actively expanded node (optional)
+      - path: list[(r,c)] final path when found (optional)
+    """
     grid = state["grid"]
     n = grid.shape[0]
     canvas = np.zeros_like(grid, dtype=float)
@@ -479,6 +555,7 @@ def render_grid(state: Dict, title: str = ""):
 # =========================
 
 def step_sort(side: str = "left"):
+    """Advance one step in the left or right sorting generator. Returns True if progressed."""
     gen_key = "sort_gen_left" if side == "left" else "sort_gen_right"
     state_key = "sort_state_left" if side == "left" else "sort_state_right"
     gen = st.session_state.get(gen_key)
@@ -493,6 +570,7 @@ def step_sort(side: str = "left"):
 
 
 def step_path():
+    """Advance one step in the active pathfinding generator. Returns True if progressed."""
     gen = st.session_state.get("path_gen")
     if gen is None:
         return False
@@ -509,6 +587,7 @@ def step_path():
 # =========================
 
 def sorting_tab():
+    """UI for sorting: controls, array generation, and bar visualizations."""
     st.subheader("Sorting Algorithms")
 
     c1, c2, c3, c4 = st.columns([1.2, 1.2, 1, 1])
@@ -588,6 +667,7 @@ def sorting_tab():
 
 
 def pathfinding_tab():
+    """UI for pathfinding: controls, grid generation, and heatmap visualization."""
     st.subheader("Pathfinding Algorithms")
 
     c1, c2, c3, c4 = st.columns([1.2, 1.2, 1, 1])
@@ -653,6 +733,13 @@ def pathfinding_tab():
 # =========================
 
 def main():
+    """
+    Bootstraps the Streamlit app:
+      - sets page config
+      - initializes session state
+      - renders tabs: Sorting | Pathfinding | About
+      - each tab drives its own generator and visuals
+    """
     st.set_page_config(page_title="Algorithm Visual Playground", layout="wide")
     init_session_state()
 
