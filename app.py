@@ -452,8 +452,8 @@ def render_grid(state: Dict, title: str = ""):
         [3*step,        "#F6E05E"], [4*step - eps, "#F6E05E"],  # 3 frontier = yellow
         [4*step,        "#3182CE"], [5*step - eps, "#3182CE"],  # 4 current = blue
         [5*step,        "#48BB78"], [6*step - eps, "#48BB78"],  # 5 final path = green
-        [6*step,        "#ED8936"], [1.0 - eps,   "#ED8936"],   # 6 start = orange
-        [1.0,           "#9F7AEA"],                               # 7 goal = purple
+        [6*step,        "#ED8936"], [7*step - eps, "#ED8936"],  # 6 start = orange
+        [7*step,        "#9F7AEA"], [1.0,           "#9F7AEA"], # 7 goal = purple
     ]
 
     fig = go.Figure(data=go.Heatmap(
