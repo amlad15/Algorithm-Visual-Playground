@@ -497,7 +497,7 @@ def sorting_tab():
 
     c5, c6, c7, c8 = st.columns(4)
     with c5:
-        if st.button("Generate new array", use_container_width=True):
+        if st.button("Generate new array",key="generate_array", use_container_width=True):
             st.session_state.arr = generate_array(st.session_state.arr_size)
             # Reset gens & states
             st.session_state.sort_gen_left = None
@@ -506,7 +506,7 @@ def sorting_tab():
             st.session_state.sort_state_right = None
             st.session_state.sort_running = False
     with c6:
-        if st.button("Start", use_container_width=True):
+        if st.button("Start",key="start_sorting", use_container_width=True):
             if st.session_state.arr is None:
                 st.session_state.arr = generate_array(st.session_state.arr_size)
             # Initialize generators if needed
@@ -515,10 +515,10 @@ def sorting_tab():
                 st.session_state.sort_gen_right = SORT_ALGOS[st.session_state.sort_algo_right](st.session_state.arr)
             st.session_state.sort_running = True
     with c7:
-        if st.button("Pause", use_container_width=True):
+        if st.button("Pause",key="pause_sorting", use_container_width=True):
             st.session_state.sort_running = False
     with c8:
-        if st.button("Step", use_container_width=True):
+        if st.button("Step", key="show_step", use_container_width=True):
             if st.session_state.sort_gen_left is None:
                 if st.session_state.arr is None:
                     st.session_state.arr = generate_array(st.session_state.arr_size)
@@ -532,7 +532,7 @@ def sorting_tab():
     # Reset button row
     c9, c10 = st.columns([1,1])
     with c9:
-        if st.button("Reset", type="secondary", use_container_width=True):
+        if st.button("Reset",key="reset_sorting", type="secondary", use_container_width=True):
             st.session_state.sort_running = False
             st.session_state.sort_gen_left = None
             st.session_state.sort_gen_right = None
@@ -556,7 +556,7 @@ def sorting_tab():
         if st.session_state.compare_mode:
             progressed = step_sort("right") or progressed
         time.sleep(max(0, st.session_state.sort_speed_ms) / 1000.0)
-        st.experimental_rerun()
+        st.rerun()
 
 
 def pathfinding_tab():
@@ -574,24 +574,24 @@ def pathfinding_tab():
 
     c5, c6, c7, c8 = st.columns(4)
     with c5:
-        if st.button("Generate new grid", use_container_width=True):
+        if st.button("Generate new grid",key="generate_grid", use_container_width=True):
             g, s, t = generate_grid(st.session_state.grid_size, st.session_state.wall_density)
             st.session_state.grid, st.session_state.start, st.session_state.goal = g, s, t
             st.session_state.path_gen = None
             st.session_state.path_state = None
             st.session_state.path_running = False
     with c6:
-        if st.button("Start", use_container_width=True):
+        if st.button("Start",key="path_finding", use_container_width=True):
             if st.session_state.grid is None:
                 g, s, t = generate_grid(st.session_state.grid_size, st.session_state.wall_density)
                 st.session_state.grid, st.session_state.start, st.session_state.goal = g, s, t
             st.session_state.path_gen = PATH_ALGOS[st.session_state.path_algo](st.session_state.grid, st.session_state.start, st.session_state.goal)
             st.session_state.path_running = True
     with c7:
-        if st.button("Pause", use_container_width=True):
+        if st.button("Pause",key="pause_pathfinding", use_container_width=True):
             st.session_state.path_running = False
     with c8:
-        if st.button("Step", use_container_width=True):
+        if st.button("Step", key="step_pathfinding", use_container_width=True):
             if st.session_state.path_gen is None:
                 if st.session_state.grid is None:
                     g, s, t = generate_grid(st.session_state.grid_size, st.session_state.wall_density)
@@ -600,7 +600,7 @@ def pathfinding_tab():
             step_path()
 
     # Reset button row
-    if st.button("Reset", type="secondary", use_container_width=True):
+    if st.button("Reset", key="resert_pathfinding", type="secondary", use_container_width=True):
         st.session_state.path_running = False
         st.session_state.path_gen = None
         st.session_state.path_state = None
@@ -617,7 +617,7 @@ def pathfinding_tab():
     if st.session_state.path_running:
         step_path()
         time.sleep(max(0, st.session_state.path_speed_ms) / 1000.0)
-        st.experimental_rerun()
+        st.rerun()
 
 
 # =========================
