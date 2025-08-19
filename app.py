@@ -8,7 +8,6 @@ from collections import deque
 import heapq
 from dataclasses import dataclass
 from typing import Generator, List, Tuple, Dict, Optional, Set
-import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
