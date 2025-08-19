@@ -49,7 +49,10 @@ That should open it up in your browser at http://localhost:8501
 
 📸 What it looks like
 
-(Insert a couple screenshots of the grid and sorting visualizer here)
+<img width="1906" height="820" alt="{0160DB1B-24EB-4710-8055-0F24C66623BE}" src="https://github.com/user-attachments/assets/84c16c27-5285-40e9-af7b-c53125491378" />
+<img width="1882" height="843" alt="{C80D4EBD-4CEC-4B94-8FE1-58EB8CD691F9}" src="https://github.com/user-attachments/assets/8c099a3f-9e43-4cb4-8830-d05e16ced981" />
+
+
 
 🤔 What I learned
 
