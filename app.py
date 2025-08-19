@@ -417,38 +417,37 @@ def render_grid(state: Dict, title: str = ""):
     canvas = np.zeros_like(grid)
     canvas[grid == 1] = 1  # walls (black)
 
-    # visited = 2 (yellow)
+    # explored = 2 (grey)
     for r, c in state.get("visited", []):
         canvas[r, c] = 2
 
-    # path = 5 (green) on top
+    # neighbors currently being explored = 3 (yellow)
+    for r, c in state.get("frontier", []):   # <- you must track this in your search generator
+        canvas[r, c] = 3
+
+    # current node = 4 (blue)
+    if "current" in state and state["current"] is not None:
+        cr, cc = state["current"]
+        canvas[cr, cc] = 4
+
+    # final path = 5 (green)
     for r, c in state.get("path", []):
         canvas[r, c] = 5
 
-    # start/goal override
-    if "current" in state and state["current"] is not None:
-        cr, cc = state["current"]
-        canvas[cr, cc] = max(canvas[cr, cc], 2)
+    # start = 6 (orange), goal = 7 (purple)
+    canvas[0, 0] = 6
+    canvas[n-1, n-1] = 7
 
-    # start blue (3), goal red (4)
-    # We don't store start/goal in state every yield; infer from corners
-    canvas[0, 0] = 3
-    canvas[n-1, n-1] = 4
-
-    # Colors: 0 white, 1 black, 2 yellow, 3 blue, 4 red, 5 green
+    # Colors: 0 white, 1 black, 2 grey, 3 yellow, 4 blue, 5 green, 6 orange, 7 purple
     colorscale = [
-        [0.0, "#FFFFFF"],
-        [0.199, "#FFFFFF"],
-        [0.2, "#000000"],
-        [0.399, "#000000"],
-        [0.4, "#F6E05E"],
-        [0.599, "#F6E05E"],
-        [0.6, "#3182CE"],
-        [0.699, "#3182CE"],
-        [0.7, "#E53E3E"],
-        [0.799, "#E53E3E"],
-        [0.8, "#48BB78"],
-        [1.0, "#48BB78"],
+        [0.0, "#FFFFFF"],  [0.14, "#FFFFFF"],  # white
+        [0.15, "#000000"], [0.29, "#000000"],  # black
+        [0.3, "#A0AEC0"],  [0.39, "#A0AEC0"],  # grey
+        [0.4, "#F6E05E"],  [0.49, "#F6E05E"],  # yellow
+        [0.5, "#3182CE"],  [0.59, "#3182CE"],  # blue
+        [0.6, "#48BB78"],  [0.69, "#48BB78"],  # green
+        [0.7, "#ED8936"],  [0.79, "#ED8936"],  # orange
+        [0.8, "#9F7AEA"],  [1.0, "#9F7AEA"],   # purple
     ]
 
     fig = go.Figure(data=go.Heatmap(
@@ -464,6 +463,7 @@ def render_grid(state: Dict, title: str = ""):
         height=500,
     )
     st.plotly_chart(fig, use_container_width=True)
+
 
 
 # =========================
